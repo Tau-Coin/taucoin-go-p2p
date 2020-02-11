@@ -78,6 +78,7 @@ type peerDrop struct {
 // Stop terminates the server and all active peer subscription.
 // It blocks until all active subscriptions have been closed.
 func (srv *Server) Stop() {
+    srv.log.Info("Stopping p2p server")
     srv.lock.Lock()
 
     if !srv.running {
@@ -105,6 +106,7 @@ func (srv *Server) Start() (err error) {
     if srv.log == nil {
         srv.log = log.Root()
     }
+    srv.log.Info("Starting p2p server")
     srv.ctx = srv.Config.Ctx
     if srv.ctx == nil {
         srv.ctx = context.Background()
@@ -178,6 +180,8 @@ func (srv *Server) setupDiscovery() error {
 
     srv.nodedb = tnode.NewDB(0)
     srv.discover, err = discover.New(srv.ctx, srv.ipfs, srv.nodedb, srv.log)
+
+    srv.discover.Start()
 
     return err
 }

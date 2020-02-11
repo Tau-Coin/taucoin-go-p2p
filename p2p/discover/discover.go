@@ -49,6 +49,8 @@ type Discover struct {
     filter Filter
 
     log    log.Logger
+
+    wg     sync.WaitGroup
 }
 
 func New(ctx context.Context, api *api.API, db *tnode.DB, log log.Logger) (*Discover, error) {
@@ -73,15 +75,20 @@ func New(ctx context.Context, api *api.API, db *tnode.DB, log log.Logger) (*Disc
 }
 
 func (d *Discover) Start() {
-    d.log.Info("Starting discover")
     go d.runner.Do(d.discover)
 }
 
 func (d *Discover) Stop() {
     d.quit <-struct{}{}
+    d.wg.Wait()
 }
 
 func (d *Discover) discover() {
+
+    d.wg.Add(1)
+    defer d.wg.Done()
+    d.log.Info("Starting discover")
+    defer d.log.Info("Discover stopped")
 
     ticker := time.NewTicker(defDiscoverInterval)
     defer ticker.Stop()
