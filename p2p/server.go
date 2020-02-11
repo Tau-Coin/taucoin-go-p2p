@@ -177,7 +177,7 @@ func (srv *Server) setupDiscovery() error {
     var err error
 
     srv.nodedb = tnode.NewDB(0)
-    srv.discover, err = discover.New(srv.ctx, srv.ipfs, srv.nodedb)
+    srv.discover, err = discover.New(srv.ctx, srv.ipfs, srv.nodedb, srv.log)
 
     return err
 }

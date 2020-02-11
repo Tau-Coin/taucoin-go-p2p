@@ -6,6 +6,7 @@ import (
     "sync"
     "time"
 
+    "github.com/ethereum/go-ethereum/log"
     "github.com/ipfs/interface-go-ipfs-core"
 
     "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
@@ -24,31 +25,33 @@ const (
 
 type Discover struct {
 
-    ctx context.Context
+    ctx    context.Context
 
     // ensure running once for discover routine
     runner sync.Once
 
     // node database
-    db *tnode.DB
+    db     *tnode.DB
 
     // chan for new connected nodes
-    Conn chan *tnode.Node
+    Conn   chan *tnode.Node
 
     // chan for new disconnected nodes
-    Disc chan *tnode.Node
+    Disc   chan *tnode.Node
 
     // chan for quit
-    quit chan struct{}
+    quit   chan struct{}
 
     // ipfs api
-    ipfs *api.API
+    ipfs   *api.API
 
     // ipfs connected peers filter
     filter Filter
+
+    log    log.Logger
 }
 
-func New(ctx context.Context, api *api.API, db *tnode.DB) (*Discover, error) {
+func New(ctx context.Context, api *api.API, db *tnode.DB, log log.Logger) (*Discover, error) {
 
     if api == nil {
         return nil, ErrNilAPI
@@ -65,10 +68,12 @@ func New(ctx context.Context, api *api.API, db *tnode.DB) (*Discover, error) {
         quit:   make(chan struct{}),
         ipfs:   api,
         filter: newFilter(),
+        log:    log,
     }, nil
 }
 
 func (d *Discover) Start() {
+    d.log.Info("Starting discover")
     go d.runner.Do(d.discover)
 }
 
@@ -93,6 +98,7 @@ func (d *Discover) discover() {
                 }
 
                 home := tnode.NewNode(string(id.ID()), nil, nil)
+                d.log.Info("Home node got:%s", id.ID())
                 d.db.SetHome(home)
             }
 
@@ -103,10 +109,18 @@ func (d *Discover) discover() {
             var peers []iface.ConnectionInfo
             peers, _ = d.ipfs.HttpAPI().Swarm().Peers(d.ctx)
             if len(peers) == 0 && d.db.Size() == 0 {
+                d.log.Warn("Got nil peers and try again")
                 continue
             }
 
+            for _, p := range peers {
+                d.log.Debug("raw peer:%s", p)
+            }
+
             wanted := d.filter.Filter(peers)
+            for _, w := range wanted {
+                d.log.Debug("filtered peer:%s", w)
+            }
             latest := tnode.MakeNodesMap(wanted)
 
             // decide which nodes are connected newly and
