@@ -133,31 +133,31 @@ func (srv *Server) Start() (err error) {
 
 // Peers returns all connected peers.
 func (srv *Server) Peers() []*Peer {
-	var ps []*Peer
-	select {
-	// Note: We'd love to put this function into a variable but
-	// that seems to cause a weird compiler error in some
-	// environments.
-	case srv.peerOp <- func(peers map[tnode.ID]*Peer) {
-		for _, p := range peers {
-			ps = append(ps, p)
-		}
-	}:
-		<-srv.peerOpDone
-	case <-srv.quit:
-	}
-	return ps
+    var ps []*Peer
+    select {
+    // Note: We'd love to put this function into a variable but
+    // that seems to cause a weird compiler error in some
+    // environments.
+    case srv.peerOp <- func(peers map[tnode.ID]*Peer) {
+        for _, p := range peers {
+            ps = append(ps, p)
+        }
+    }:
+        <-srv.peerOpDone
+    case <-srv.quit:
+    }
+    return ps
 }
 
 // PeerCount returns the number of connected peers.
 func (srv *Server) PeerCount() int {
-	var count int
-	select {
-	case srv.peerOp <- func(ps map[tnode.ID]*Peer) { count = len(ps) }:
-		<-srv.peerOpDone
-	case <-srv.quit:
-	}
-	return count
+    var count int
+    select {
+    case srv.peerOp <- func(ps map[tnode.ID]*Peer) { count = len(ps) }:
+        <-srv.peerOpDone
+    case <-srv.quit:
+    }
+    return count
 }
 
 func (srv *Server) IPFS() *ipfsapi.API {
@@ -273,27 +273,27 @@ func (srv *Server) addPeerChecks(_ map[tnode.ID]*Peer, _ *tnode.Node) error {
 // the peer.
 func (srv *Server) runPeer(p *Peer) {
 
-	// broadcast peer add
-	srv.peerFeed.Send(&PeerEvent{
-		Type:          PeerEventTypeAdd,
-		Peer:          p.ID(),
-		RemoteAddress: p.RemoteAddr(),
-		LocalAddress:  string(srv.homenode.ID()),
-	})
+    // broadcast peer add
+    srv.peerFeed.Send(&PeerEvent{
+        Type:          PeerEventTypeAdd,
+        Peer:          p.ID(),
+        RemoteAddress: p.RemoteAddr(),
+        LocalAddress:  string(srv.homenode.ID()),
+    })
 
-	// run the protocol
-	remoteRequested, err := p.run()
+    // run the protocol
+    remoteRequested, err := p.run()
 
-	// broadcast peer drop
-	srv.peerFeed.Send(&PeerEvent{
-		Type:          PeerEventTypeDrop,
-		Peer:          p.ID(),
-		Error:         err.Error(),
-		RemoteAddress: p.RemoteAddr(),
-		LocalAddress:  string(srv.homenode.ID()),
-	})
+    // broadcast peer drop
+    srv.peerFeed.Send(&PeerEvent{
+        Type:          PeerEventTypeDrop,
+        Peer:          p.ID(),
+        Error:         err.Error(),
+        RemoteAddress: p.RemoteAddr(),
+        LocalAddress:  string(srv.homenode.ID()),
+    })
 
-	// Note: run waits for existing peers to be sent on srv.delpeer
-	// before returning, so this send should not select on srv.quit.
-	srv.delpeer <- peerDrop{p, err, remoteRequested}
+    // Note: run waits for existing peers to be sent on srv.delpeer
+    // before returning, so this send should not select on srv.quit.
+    srv.delpeer <- peerDrop{p, err, remoteRequested}
 }

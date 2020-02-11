@@ -9,6 +9,7 @@ import (
 
     "github.com/ethereum/go-ethereum/log"
 
+    "github.com/Tau-Coin/taucoin-go-p2p/forum"
     "github.com/Tau-Coin/taucoin-go-p2p/p2p"
 )
 
@@ -24,6 +25,11 @@ func main() {
         EnableMsgEvents: true,
         Logger:          logger,
     }
+
+    // Register protocols
+    cfg.Protocols = make([]p2p.Protocol, 0)
+    forum := forum.MakeForum()
+    cfg.Protocols = append(cfg.Protocols, forum)
 
     srv := &p2p.Server{Config: cfg}
     srv.Start()

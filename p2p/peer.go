@@ -33,32 +33,32 @@ var (
 type PeerEventType string
 
 const (
-	// PeerEventTypeAdd is the type of event emitted when a peer is added
-	// to a p2p.Server
-	PeerEventTypeAdd PeerEventType = "add"
+    // PeerEventTypeAdd is the type of event emitted when a peer is added
+    // to a p2p.Server
+    PeerEventTypeAdd PeerEventType = "add"
 
-	// PeerEventTypeDrop is the type of event emitted when a peer is
-	// dropped from a p2p.Server
-	PeerEventTypeDrop PeerEventType = "drop"
+    // PeerEventTypeDrop is the type of event emitted when a peer is
+    // dropped from a p2p.Server
+    PeerEventTypeDrop PeerEventType = "drop"
 
-	// PeerEventTypeMsgSend is the type of event emitted when a
-	// message is successfully sent to a peer
-	PeerEventTypeMsgSend PeerEventType = "msgsend"
+    // PeerEventTypeMsgSend is the type of event emitted when a
+    // message is successfully sent to a peer
+    PeerEventTypeMsgSend PeerEventType = "msgsend"
 
-	// PeerEventTypeMsgRecv is the type of event emitted when a
-	// message is received from a peer
-	PeerEventTypeMsgRecv PeerEventType = "msgrecv"
+    // PeerEventTypeMsgRecv is the type of event emitted when a
+    // message is received from a peer
+    PeerEventTypeMsgRecv PeerEventType = "msgrecv"
 )
 
 // PeerEvent is an event emitted when peers are either added or dropped from
 // a p2p.Server or when a message is sent or received on a peer connection
 type PeerEvent struct {
-	Type          PeerEventType `json:"type"`
-	Peer          tnode.ID      `json:"peer"`
-	Error         string        `json:"error,omitempty"`
-	Protocol      string        `json:"protocol,omitempty"`
-	LocalAddress  string        `json:"local,omitempty"`
-	RemoteAddress string        `json:"remote,omitempty"`
+    Type          PeerEventType `json:"type"`
+    Peer          tnode.ID      `json:"peer"`
+    Error         string        `json:"error,omitempty"`
+    Protocol      string        `json:"protocol,omitempty"`
+    LocalAddress  string        `json:"local,omitempty"`
+    RemoteAddress string        `json:"remote,omitempty"`
 }
 
 // Peer represents a connected remote node.
@@ -108,6 +108,10 @@ func (p *Peer) ID() tnode.ID {
 
 func (p *Peer) RemoteAddr() string {
     return p.node.Addr().String()
+}
+
+func (p *Peer) Log() log.Logger {
+    return p.log
 }
 
 func (p *Peer) run() (remoteRequested bool, err error) {
