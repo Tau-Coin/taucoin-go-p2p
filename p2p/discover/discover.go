@@ -3,6 +3,7 @@ package discover
 import (
     "context"
     "errors"
+    "fmt"
     "sync"
     "time"
 
@@ -105,7 +106,7 @@ func (d *Discover) discover() {
                 }
 
                 home := tnode.NewNode(string(id.ID()), nil, nil)
-                d.log.Info("Home node got:%s", id.ID())
+                d.log.Info("Home node got", "id", id.ID())
                 d.db.SetHome(home)
             }
 
@@ -120,13 +121,14 @@ func (d *Discover) discover() {
                 continue
             }
 
+            d.log.Debug("raw peers queried", "number", len(peers))
             for _, p := range peers {
-                d.log.Debug("raw peer:%s", p)
+                d.log.Debug("raw peer queried", "peer", fmt.Sprintf("%s/%s", p.Address(), p.ID()))
             }
 
             wanted := d.filter.Filter(peers)
             for _, w := range wanted {
-                d.log.Debug("filtered peer:%s", w)
+                d.log.Debug("wanted peer", "peer", fmt.Sprintf("%s/%s", w.Address(), w.ID()))
             }
             latest := tnode.MakeNodesMap(wanted)
 
