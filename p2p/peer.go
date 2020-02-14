@@ -86,7 +86,7 @@ func (p *Peer) Disconnect(reason DiscReason) {
     }
 }
 
-func newPeer(log log.Logger, node *tnode.Node, homeID string, protocols []Protocol, pubsub PublishSubscriber) *Peer {
+func newPeer(logger log.Logger, node *tnode.Node, homeID string, protocols []Protocol, pubsub PublishSubscriber) *Peer {
     protomap := matchProtocols(protocols, pubsub, homeID)
     p := &Peer{
         node:     node,
@@ -96,7 +96,7 @@ func newPeer(log log.Logger, node *tnode.Node, homeID string, protocols []Protoc
         disc:     make(chan DiscReason),
         protoErr: make(chan error, len(protomap)),
         closed:   make(chan struct{}),
-        log:      log.New("id", node.ID()),
+        log:      logger.New("id", node.ID()),
     }
 
     return p
@@ -116,14 +116,15 @@ func (p *Peer) Log() log.Logger {
 
 func (p *Peer) run() (remoteRequested bool, err error) {
     var (
-        writeStart = make(chan struct{}, 1)
-        writeErr   = make(chan error, 1)
-        readErr    = make(chan error, 1) // TODO:p.readLoopCount()
+        writeStart    = make(chan struct{}, 1)
+        writeErr      = make(chan error, 1)
+        readLoopCount = p.readLoopCount()
+        readErr       = make(chan error, readLoopCount)
         //reason     DiscReason // sent to the peer
-        subChans   = make(map[string]iface.PubSubSubscription)
+        subChans      = make(map[string]iface.PubSubSubscription)
     )
 
-    p.wg.Add(p.readLoopCount())
+    p.wg.Add(readLoopCount)
     for _, proto := range p.running {
         for _, t := range proto.Topics {
             topic := constructTopic(string(p.ID()), t)
@@ -144,6 +145,7 @@ loop:
             // there was no error.
             if err != nil {
                 //reason = DiscNetworkError
+                p.log.Error("write error", "err", err)
                 break loop
             }
             writeStart <- struct{}{}
@@ -153,6 +155,7 @@ loop:
                 remoteRequested = true
                 //reason = r
             }
+            p.log.Error("read error", "err", err)
             break loop
 
         case err = <-p.protoErr:
@@ -160,14 +163,17 @@ loop:
             if err == ErrReadTimeout {
                 p.log.Trace(fmt.Sprintf("Peer %s timeout", p.ID()))
             }
+            p.log.Error("protocol error", "err", err)
             break loop
 
         case err = <-p.disc:
             //reason = discReasonForError(err)
+            p.log.Warn("request disconnect")
             break loop
         }
     }
 
+    p.log.Info("peer is shutting down")
     // Close all active subscription channels
     for _, sub := range subChans {
         sub.Close()
@@ -182,6 +188,7 @@ loop:
 func (p *Peer) readLoop(topic string, errc chan<- error, subChans map[string]iface.PubSubSubscription) {
     defer p.wg.Done()
 
+    p.log.Debug("starting readloop", "topic", topic)
     subscription, err := p.pubsub.Sub(topic)
     if err != nil {
         errc <- err
@@ -214,6 +221,7 @@ func (p *Peer) handle(message iface.PubSubMessage, topic string) error {
         ReceivedAt: time.Now(),
     }
 
+    p.log.Debug("Received msg", "topic", topic)
     // select handling protocol
     proto, err := p.getProto(topic)
     if err != nil {
@@ -264,15 +272,15 @@ func (p *Peer) startProtocols(writeStart <-chan struct{}, writeErr chan<- error)
         proto.wstart = writeStart
         proto.werr = writeErr
         var rw MsgReadWriter = proto
-        p.log.Trace(fmt.Sprintf("Starting protocol %s/%d", proto.Name, proto.Version))
+        p.log.Debug(fmt.Sprintf("Starting protocol %s/%d", proto.Name, proto.Version))
 
         go func() {
             err := proto.Run(p, rw)
             if err == nil {
-                p.log.Trace(fmt.Sprintf("Protocol %s/%d returned", proto.Name, proto.Version))
+                p.log.Debug(fmt.Sprintf("Protocol %s/%d returned", proto.Name, proto.Version))
                 err = errProtocolReturned
             }  else if err != io.EOF {
-                p.log.Trace(fmt.Sprintf("Protocol %s/%d failed", proto.Name, proto.Version), "err", err)
+                p.log.Debug(fmt.Sprintf("Protocol %s/%d failed", proto.Name, proto.Version), "err", err)
             }
 
             p.protoErr <- err

@@ -114,7 +114,7 @@ func (srv *Server) Start() (err error) {
 
     srv.quit = make(chan struct{})
     srv.delpeer = make(chan peerDrop)
-    srv.checkpointAddPeer = make(chan *tnode.Node)
+    srv.checkpointAddPeer = make(chan *tnode.Node, 1)
     srv.peerOp = make(chan peerOpFunc)
     srv.peerOpDone = make(chan struct{})
 
@@ -259,7 +259,7 @@ running:
     // Wait for peers to shut down.
     for len(peers) > 0 {
         p := <-srv.delpeer
-        p.log.Trace("<-delpeer ", "id", p.ID())
+        p.log.Trace("<-delpeer ")
         delete(peers, p.ID())
     }
 }

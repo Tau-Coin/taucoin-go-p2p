@@ -68,7 +68,7 @@ func New(ctx context.Context, api *api.API, db *tnode.DB, log log.Logger) (*Disc
         db:     db,
         Conn:   make(chan *tnode.Node),
         Disc:   make(chan *tnode.Node),
-        quit:   make(chan struct{}),
+        quit:   make(chan struct{}, 1),
         ipfs:   api,
         filter: newFilter(),
         log:    log,

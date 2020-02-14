@@ -24,7 +24,7 @@ type Node struct {
 
 func New(con iface.ConnectionInfo) *Node {
     n := &Node{
-            id:   ID(con.ID()),
+            id:   ID(fmt.Sprintf("%s", con.ID())),
             addr: con.Address(),
     }
 

@@ -21,14 +21,14 @@ var (
 func MakeForum() p2p.Protocol {
     return p2p.Protocol {
         Name: protocolName,
-    Version: protocolVersion,
-    Topics:  protocolTopics,
-    Run:     run,
+        Version: protocolVersion,
+        Topics:  protocolTopics,
+        Run:     run,
     }
 }
 
 func run(peer *p2p.Peer, rw p2p.MsgReadWriter) error {
-    peer.Log().Info("Peer %s is bringup", peer.ID())
+    peer.Log().Info("Peer bringup")
     go sayhello(peer, rw)
     return handler(peer, rw)
 }
@@ -41,13 +41,13 @@ func handler(peer *p2p.Peer, rw p2p.MsgReadWriter) error {
         return err
     }
 
-    peer.Log().Info("Receive message:%s", msg)
+    peer.Log().Info("forum", "Receive message:", msg)
 
     switch msg.Topic {
     case "TIME":
         resp := p2p.Msg{
                 Topic:  "TIMERSP",
-        Payload:bytes.NewReader([]byte(fmt.Sprintf("Now:%s", time.Now()))),
+                Payload:bytes.NewReader([]byte(fmt.Sprintf("Now:%s", time.Now()))),
         }
 
         errw := rw.WriteMsg(resp)
