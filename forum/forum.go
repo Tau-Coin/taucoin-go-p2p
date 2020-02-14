@@ -12,6 +12,8 @@ const (
     protocolName    = "forum"
 
     protocolVersion = 1
+
+    defHelloInterval = 15 * time.Second
 )
 
 var (
@@ -29,7 +31,7 @@ func MakeForum() p2p.Protocol {
 
 func run(peer *p2p.Peer, rw p2p.MsgReadWriter) error {
     peer.Log().Info("Peer bringup")
-    go sayhello(peer, rw)
+    go helloLoop(peer, rw)
     return handler(peer, rw)
 }
 
@@ -58,10 +60,22 @@ func handler(peer *p2p.Peer, rw p2p.MsgReadWriter) error {
     }
 }
 
+func helloLoop(peer *p2p.Peer, rw p2p.MsgReadWriter) {
+    ticker := time.NewTicker(defHelloInterval)
+    defer ticker.Stop()
+
+    for {
+        select {
+        case <-ticker.C:
+            sayhello(peer, rw)
+	}
+    }
+}
+
 func sayhello(peer *p2p.Peer, rw p2p.MsgReadWriter) {
     msg := p2p.Msg{
         Topic:   "HELLO",
-    Payload: bytes.NewReader([]byte("hello " + string(peer.ID()))),
+        Payload: bytes.NewReader([]byte("hello " + string(peer.ID()))),
     }
 
     err := rw.WriteMsg(msg)
