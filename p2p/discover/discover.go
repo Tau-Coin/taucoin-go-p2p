@@ -105,7 +105,7 @@ func (d *Discover) discover() {
                     continue
                 }
 
-                home := tnode.NewNode(string(id.ID()), nil, nil)
+                home := tnode.NewNode(fmt.Sprintf("%s", id.ID()), nil, nil)
                 d.log.Info("Home node got", "id", id.ID())
                 d.db.SetHome(home)
             }
