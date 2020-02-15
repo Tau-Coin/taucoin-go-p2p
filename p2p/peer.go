@@ -215,7 +215,7 @@ func (p *Peer) readLoop(topic string, errc chan<- error, subChans map[string]ifa
 
 func (p *Peer) handle(message iface.PubSubMessage, topic string) error {
     msg := Msg{
-        From:       string(message.From()),
+        From:       fmt.Sprintf("%s", message.From()),
         Topic:      topic,
         Payload:    bytes.NewReader(message.Data()),
         ReceivedAt: time.Now(),
