@@ -1,4 +1,4 @@
-package util
+package utils
 
 import (
     cid "github.com/ipfs/go-cid"
@@ -8,13 +8,13 @@ import (
 
 func ByteToPath(b []byte) (path.Path, error){
 	// byte into cid
-	_, cid, err := cid.CidFromBytes(b)
+	c, err := cid.Decode(string(b))
 	if err != nil{
        return nil, err
 	}
 
 	// cid into path
-	res := path.IpfsPath(cid)
+	res := path.IpfsPath(c)
 
-	return res.Path, nil
+	return res, nil
 }
