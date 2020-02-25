@@ -36,7 +36,7 @@ func New(con iface.ConnectionInfo) *Node {
 
 func NewNode(id string, addr ma.Multiaddr, pids []protocol.ID) *Node {
     n := &Node{
-            id:   ID(id),
+            id:   ID(fmt.Sprintf("%s", id)),
             addr: addr,
     }
 
