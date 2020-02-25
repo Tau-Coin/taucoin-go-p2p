@@ -39,24 +39,25 @@ func handler(peer *p2p.Peer, rw p2p.MsgReadWriter) error {
     for {
         msg, err := rw.ReadMsg()
 
-    if err != nil {
-        return err
-    }
-
-    peer.Log().Info("forum", "Receive message:", msg)
-
-    switch msg.Topic {
-    case "TIME":
-        resp := p2p.Msg{
-                Topic:  "TIMERSP",
-                Payload:bytes.NewReader([]byte(fmt.Sprintf("Now:%s", time.Now()))),
+        if err != nil {
+            return err
         }
 
-        errw := rw.WriteMsg(resp)
-        if errw != nil {
-                peer.Log().Error("Write error ", errw)
+        peer.Log().Info("forum", "Receive message:", msg)
+
+        switch msg.Topic {
+        case "TIME":
+            resp := p2p.Msg{
+                    Topic:  "TIMERSP",
+                    Payload:bytes.NewReader([]byte(fmt.Sprintf("Now:%s", time.Now()))),
+            }
+
+            errw := rw.WriteMsg(resp)
+            if errw != nil {
+                peer.Log().Error("Write error ", "err", errw)
+                return errw
+            }
         }
-    }
     }
 }
 
@@ -64,22 +65,25 @@ func helloLoop(peer *p2p.Peer, rw p2p.MsgReadWriter) {
     ticker := time.NewTicker(defHelloInterval)
     defer ticker.Stop()
 
+    var err error
+
     for {
         select {
         case <-ticker.C:
-            sayhello(peer, rw)
+            err = sayhello(peer, rw)
+            if err != nil {
+                peer.Log().Error("Write hello error", "err", err)
+                return
+            }
 	}
     }
 }
 
-func sayhello(peer *p2p.Peer, rw p2p.MsgReadWriter) {
+func sayhello(peer *p2p.Peer, rw p2p.MsgReadWriter) error {
     msg := p2p.Msg{
         Topic:   "HELLO",
         Payload: bytes.NewReader([]byte("hello " + string(peer.ID()))),
     }
 
-    err := rw.WriteMsg(msg)
-    if err != nil {
-        peer.Log().Error("Write error ", err)
-    }
+    return rw.WriteMsg(msg)
 }

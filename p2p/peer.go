@@ -181,6 +181,7 @@ loop:
 
     close(p.closed)
     p.wg.Wait()
+    p.log.Info("peer is closed")
 
     return remoteRequested, err
 }
