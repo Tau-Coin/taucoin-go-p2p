@@ -11,7 +11,6 @@ import (
     "github.com/ethereum/go-ethereum/log"
 
     "github.com/Tau-Coin/taucoin-go-p2p/p2p/discover"
-    ipfsapi"github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
     "github.com/Tau-Coin/taucoin-go-p2p/p2p/tnode"
 )
 
@@ -56,7 +55,6 @@ type Server struct {
     homenode  *tnode.Node
     discover  *discover.Discover
 
-    ipfs   *ipfsapi.API
     pubsub PublishSubscriber
 
     // Channels into the run loop.
@@ -118,7 +116,7 @@ func (srv *Server) Start() (err error) {
     srv.peerOp = make(chan peerOpFunc)
     srv.peerOpDone = make(chan struct{})
 
-    if err := srv.setupIpfsAPI(); err != nil {
+    if err := srv.setupPubsub(); err != nil {
         return err
     }
     if err := srv.setupDiscovery(); err != nil {
@@ -160,18 +158,8 @@ func (srv *Server) PeerCount() int {
     return count
 }
 
-func (srv *Server) IPFS() *ipfsapi.API {
-    return srv.ipfs
-}
-
-func (srv *Server) setupIpfsAPI() error {
-    var err error
-
-    if srv.ipfs, err = ipfsapi.New(nil); err != nil {
-        return err
-    }
-
-    srv.pubsub = newpubsub(srv.ctx, srv.ipfs)
+func (srv *Server) setupPubsub() error {
+    srv.pubsub = newpubsub(srv.ctx)
     return nil
 }
 
@@ -179,7 +167,7 @@ func (srv *Server) setupDiscovery() error {
     var err error
 
     srv.nodedb = tnode.NewDB(0)
-    srv.discover, err = discover.New(srv.ctx, srv.ipfs, srv.nodedb, srv.log)
+    srv.discover, err = discover.New(srv.ctx, srv.nodedb, srv.log)
 
     srv.discover.Start()
 

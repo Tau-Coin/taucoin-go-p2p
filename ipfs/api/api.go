@@ -4,7 +4,8 @@ import (
     "errors"
     "strings"
 
-    ipfsapi"github.com/ipfs/go-ipfs-http-client"
+    "github.com/ethereum/go-ethereum/log"
+    ipfsapi "github.com/ipfs/go-ipfs-http-client"
 
     ma "github.com/multiformats/go-multiaddr"
 )
@@ -13,7 +14,7 @@ var (
     ErrInvalidCfg = errors.New("invalid api config")
 )
 
-type API struct {
+type api struct {
 
     // ipfs daemon api url
     url      string
@@ -25,7 +26,18 @@ type API struct {
     api      *ipfsapi.HttpApi
 }
 
-func New(cfg *Config) (*API, error) {
+var singleton *api
+
+func init() {
+    var err error
+
+    singleton, err = newAPI(nil)
+    if err != nil {
+        log.Root().Crit("new ipfs api crashed")
+    }
+}
+
+func newAPI(cfg *Config) (*api, error) {
 
     if cfg == nil {
         cfg = &DefaultConfig
@@ -55,13 +67,13 @@ func New(cfg *Config) (*API, error) {
         }
     }
 
-    return &API{
+    return &api{
             url:      cfg.Url,
             ipfspath: cfg.Ipfspath,
             api:      httpapi,
     }, nil
 }
 
-func (api *API) HttpAPI() *ipfsapi.HttpApi {
-    return api.api
+func API() *ipfsapi.HttpApi {
+    return singleton.api
 }

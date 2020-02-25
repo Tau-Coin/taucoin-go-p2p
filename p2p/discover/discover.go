@@ -10,7 +10,7 @@ import (
     "github.com/ethereum/go-ethereum/log"
     "github.com/ipfs/interface-go-ipfs-core"
 
-    "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
+    ipfs "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
     "github.com/Tau-Coin/taucoin-go-p2p/p2p/tnode"
 )
 
@@ -43,9 +43,6 @@ type Discover struct {
     // chan for quit
     quit   chan struct{}
 
-    // ipfs api
-    ipfs   *api.API
-
     // ipfs connected peers filter
     filter Filter
 
@@ -54,11 +51,7 @@ type Discover struct {
     wg     sync.WaitGroup
 }
 
-func New(ctx context.Context, api *api.API, db *tnode.DB, log log.Logger) (*Discover, error) {
-
-    if api == nil {
-        return nil, ErrNilAPI
-    }
+func New(ctx context.Context, db *tnode.DB, log log.Logger) (*Discover, error) {
     if db == nil {
         return nil, ErrNilDB
     }
@@ -69,7 +62,6 @@ func New(ctx context.Context, api *api.API, db *tnode.DB, log log.Logger) (*Disc
         Conn:   make(chan *tnode.Node),
         Disc:   make(chan *tnode.Node),
         quit:   make(chan struct{}, 1),
-        ipfs:   api,
         filter: newFilter(),
         log:    log,
     }, nil
@@ -99,7 +91,7 @@ func (d *Discover) discover() {
         case <-ticker.C:
             // Anyway, we should get local ipfs id
             if d.db.Home() == nil {
-                id, err := d.ipfs.HttpAPI().Key().Self(d.ctx)
+                id, err := ipfs.API().Key().Self(d.ctx)
                 // ipfs daemon hasn't been launched.
                 if err != nil {
                     continue
@@ -115,7 +107,7 @@ func (d *Discover) discover() {
             // and empty peers mean network disconnected.
             // In this condition, disconnect all active peers.
             var peers []iface.ConnectionInfo
-            peers, _ = d.ipfs.HttpAPI().Swarm().Peers(d.ctx)
+            peers, _ = ipfs.API().Swarm().Peers(d.ctx)
             if len(peers) == 0 && d.db.Size() == 0 {
                 d.log.Warn("Got nil peers and try again")
                 continue

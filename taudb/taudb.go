@@ -7,17 +7,16 @@ import (
     "github.com/ipfs/interface-go-ipfs-core/path"
 
     "github.com/Tau-Coin/taucoin-go-p2p/taudb/utils"
+    ipfs "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
 )
 
 type IPFSdb struct {
     ctx  context.Context
-    ipfs *api.API
 }
 
-func NewIPFSdb(ctx context.Context, ipfs *api.API) *IPFSdb {
+func NewIPFSdb(ctx context.Context) *IPFSdb {
     return &IPFSdb{
 		ctx:  ctx,
-		ipfs: ipfs,
     }
 }
 
@@ -25,7 +24,7 @@ func (db *IPFSdb) Put(key, value []byte) error {
 	// value -> io.Reader
 	reader := bytes.NewReader(value)
 
-	blockstat, err:= db.ipfs.HttpAPI().Block().Put(db.ctx, reader)
+	blockstat, err:= ipfs.API().Block().Put(db.ctx, reader)
 
 	return err
 }
@@ -34,7 +33,7 @@ func (db *IPFSdb) Get(key []byte) ([]byte, error) {
 	// key -> path
 	path := utils.ByteToPath(key)
 
-	reader, err:= db.ipfs.HttpAPI().Block().Get(db.ctx, path)
+	reader, err:= ipfs.API().Block().Get(db.ctx, path)
 	if err != nil{
 		return nil, err
 	}
@@ -49,14 +48,14 @@ func (db *IPFSdb) Delete(key []byte) error {
 	// key -> path
 	path := utils.ByteToPath(key)
 
-    return db.ipfs.HttpAPI().Block().Rm(db.ctx, path)
+    return ipfs.API().Block().Rm(db.ctx, path)
 }
 
 func (db *IPFSdb) Has(key []byte) (bool, error) {
 	// key -> path
 	path := utils.ByteToPath(key)
 
-	blockStat, err:= db.ipfs.HttpAPI().Block().Stat(db.ctx, path)
+	blockStat, err:= ipfs.API().Block().Stat(db.ctx, path)
 
 	return blockStat.Size()> 0, err
 }

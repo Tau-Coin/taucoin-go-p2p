@@ -1,2 +1,2 @@
 main:
-	go build cmds/tau.go
+	go build -o tau-forum cmds/tau.go
