@@ -10,6 +10,10 @@ import (
 
 type ID string
 
+func (id ID)Bytes() []byte {
+    return []byte(string(id))
+}
+
 type Node struct {
 
     // ipfs node identity peer id.

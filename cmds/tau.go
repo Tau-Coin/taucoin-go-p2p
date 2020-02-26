@@ -11,6 +11,7 @@ import (
 
     "github.com/Tau-Coin/taucoin-go-p2p/forum"
     "github.com/Tau-Coin/taucoin-go-p2p/p2p"
+    "github.com/Tau-Coin/taucoin-go-p2p/tau"
 )
 
 func main() {
@@ -30,6 +31,10 @@ func main() {
     cfg.Protocols = make([]p2p.Protocol, 0)
     forum := forum.MakeForum()
     cfg.Protocols = append(cfg.Protocols, forum)
+
+    // create tau protocol
+    protocolManager := tau.NewProtocolManager()
+    _ = protocolManager.MakeProtocol(1)
 
     srv := &p2p.Server{Config: cfg}
     srv.Start()
