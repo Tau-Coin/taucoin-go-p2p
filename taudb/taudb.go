@@ -1,4 +1,4 @@
-package taudb
+package ipfsdb
 
 import (
     "context"
