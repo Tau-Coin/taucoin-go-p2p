@@ -25,7 +25,7 @@ func (db *IPFSdb) Put(key, value []byte) error {
 	// value -> io.Reader
 	reader := bytes.NewReader(value)
 
-	blockstat, err:= ipfs.API().Block().Put(db.ctx, reader)
+	_, err:= ipfs.API().Block().Put(db.ctx, reader)
 
 	return err
 }
