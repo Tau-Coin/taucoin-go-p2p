@@ -69,3 +69,8 @@ func (db *IPFSdb) Has(key []byte) (bool, error) {
 
 	return blockStat.Size()> 0, err
 }
+
+// TBD
+func (db *IPFSdb) Write(batch *Batch) error {
+	return nil
+}
