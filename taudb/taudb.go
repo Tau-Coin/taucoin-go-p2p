@@ -52,7 +52,7 @@ func (db *IPFSdb) Delete(key []byte) error {
 	// key -> path
 	path, err:= utils.ByteToPath(key)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
     return ipfs.API().Block().Rm(db.ctx, path)
@@ -62,7 +62,7 @@ func (db *IPFSdb) Has(key []byte) (bool, error) {
 	// key -> path
 	path, err:= utils.ByteToPath(key)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
 	blockStat, err:= ipfs.API().Block().Stat(db.ctx, path)
