@@ -1,10 +1,11 @@
 package ipfsdb
 
 import (
+	"bytes"
     "context"
 
-    "github.com/ipfs/interface-go-ipfs-core"
-    "github.com/ipfs/interface-go-ipfs-core/path"
+    //"github.com/ipfs/interface-go-ipfs-core"
+    //"github.com/ipfs/interface-go-ipfs-core/path"
 
     "github.com/Tau-Coin/taucoin-go-p2p/taudb/utils"
     ipfs "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
@@ -31,7 +32,10 @@ func (db *IPFSdb) Put(key, value []byte) error {
 
 func (db *IPFSdb) Get(key []byte) ([]byte, error) {
 	// key -> path
-	path := utils.ByteToPath(key)
+	path, err:= utils.ByteToPath(key)
+	if err != nil {
+		return nil, err
+	}
 
 	reader, err:= ipfs.API().Block().Get(db.ctx, path)
 	if err != nil{
@@ -46,14 +50,20 @@ func (db *IPFSdb) Get(key []byte) ([]byte, error) {
 
 func (db *IPFSdb) Delete(key []byte) error {
 	// key -> path
-	path := utils.ByteToPath(key)
+	path, err:= utils.ByteToPath(key)
+	if err != nil {
+		return nil, err
+	}
 
     return ipfs.API().Block().Rm(db.ctx, path)
 }
 
 func (db *IPFSdb) Has(key []byte) (bool, error) {
 	// key -> path
-	path := utils.ByteToPath(key)
+	path, err:= utils.ByteToPath(key)
+	if err != nil {
+		return nil, err
+	}
 
 	blockStat, err:= ipfs.API().Block().Stat(db.ctx, path)
 

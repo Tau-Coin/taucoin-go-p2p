@@ -9,10 +9,10 @@ package ipfsdb
 import (
 	"encoding/binary"
 	"fmt"
-	"io"
 
     "github.com/Tau-Coin/taucoin-go-p2p/taudb/errors"
     "github.com/Tau-Coin/taucoin-go-p2p/taudb/storage"
+
 )
 
 // ErrBatchCorrupted records reason of batch corruption. This error will be
