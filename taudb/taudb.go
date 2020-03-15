@@ -6,6 +6,7 @@ import (
 
     //"github.com/ipfs/interface-go-ipfs-core"
     caopts "github.com/ipfs/interface-go-ipfs-core/options"
+	mh "github.com/multiformats/go-multihash"
 
     "github.com/Tau-Coin/taucoin-go-p2p/taudb/utils"
     ipfs "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
@@ -25,7 +26,7 @@ func (db *IPFSdb) Put(key, value []byte) error {
 	// value -> io.Reader
 	reader := bytes.NewReader(value)
 
-	opt := func(bs *BlockPutSettings) error {
+	opt := func(bs *caopts.BlockPutSettings) error {
 		bs.Codec = 0xa0
 		bs.MhType = mh.KECCAK_256
 		bs.MhLength = -1
