@@ -5,7 +5,7 @@ import (
     "context"
 
     //"github.com/ipfs/interface-go-ipfs-core"
-    //"github.com/ipfs/interface-go-ipfs-core/path"
+    caopts "github.com/ipfs/interface-go-ipfs-core/options"
 
     "github.com/Tau-Coin/taucoin-go-p2p/taudb/utils"
     ipfs "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
@@ -25,7 +25,15 @@ func (db *IPFSdb) Put(key, value []byte) error {
 	// value -> io.Reader
 	reader := bytes.NewReader(value)
 
-	_, err:= ipfs.API().Block().Put(db.ctx, reader)
+	opt := func(bs *BlockPutSettings) error {
+		bs.Codec = 0xa0
+		bs.MhType = mh.KECCAK_256
+		bs.MhLength = -1
+		bs.Pin = true
+		return nil
+	}
+
+	_, err:= ipfs.API().Block().Put(db.ctx, reader, opt)
 
 	return err
 }
