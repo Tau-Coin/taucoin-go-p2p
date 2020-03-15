@@ -27,7 +27,7 @@ func (db *IPFSdb) Put(key, value []byte) error {
 	reader := bytes.NewReader(value)
 
 	opt := func(bs *caopts.BlockPutSettings) error {
-		bs.Codec = 0xa0
+		bs.Codec = "0xa0"
 		bs.MhType = mh.KECCAK_256
 		bs.MhLength = -1
 		bs.Pin = true
