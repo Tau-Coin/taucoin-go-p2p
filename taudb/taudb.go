@@ -73,15 +73,19 @@ func (db *IPFSdb) Has(key []byte) (bool, error) {
 // TBD
 func (db *IPFSdb) Write(batch *Batch) error {
 	if batch == nil || batch.Len() == 0 {
-        return err
+        return nil
     }
 	for i:= 0; i< batch.internalLen; i++{
-		keyStart= batch.batchIndex[i].keyPos
-		keyEnd= keyStart+ batch.batchIndex[i].keyLen
-		valueStart= batch.batchIndex[i].valuePos
-		valueEnd= valueStart+ batch.batchIndex[i].valueLen
-		keyTmp: = batch.data[keyStart: keyEnd]
-		valueTmp: = batch.data[valueStart: valueEnd]
+
+		keyStart := batch.index[i].keyPos
+		keyEnd := keyStart+ batch.index[i].keyLen
+
+		valueStart := batch.index[i].valuePos
+		valueEnd := valueStart+ batch.index[i].valueLen
+
+		keyTmp := batch.data[keyStart : keyEnd]
+		valueTmp := batch.data[valueStart : valueEnd]
+
 		err:= db.Put(keyTmp, valueTmp)
 		if err != nil {
 			return err
