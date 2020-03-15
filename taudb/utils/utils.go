@@ -3,8 +3,10 @@ package utils
 import (
 	"errors"
 
-    cid "github.com/ipfs/go-cid"
     "github.com/ipfs/interface-go-ipfs-core/path"
+
+    cid "github.com/ipfs/go-cid"
+	mh  "github.com/multiformats/go-multihash"
 )
 
 func ByteToPath(b []byte) (path.Path, error){
@@ -18,6 +20,17 @@ func ByteToPath(b []byte) (path.Path, error){
 	res := path.IpfsPath(c)
 
 	return res, nil
+}
+
+// keccak256ToCid takes a keccak256 hash and returns its cid based on
+// the codec given.
+func Keccak256ToPath(codec uint64, h []byte) (path.Path, error) {
+    buf, err := mh.Encode(h, mh.KECCAK_256)
+    if err != nil {
+        panic(err)
+    }
+
+    return path.IpfsPath(cid.NewCidV1(codec, mh.Multihash(buf))), nil
 }
 
 var (

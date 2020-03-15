@@ -4,12 +4,11 @@ import (
 	"bytes"
     "context"
 
-    //"github.com/ipfs/interface-go-ipfs-core"
-    caopts "github.com/ipfs/interface-go-ipfs-core/options"
-	mh "github.com/multiformats/go-multihash"
-
     "github.com/Tau-Coin/taucoin-go-p2p/taudb/utils"
-    ipfs "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
+
+    caopts "github.com/ipfs/interface-go-ipfs-core/options"
+	mh     "github.com/multiformats/go-multihash"
+    ipfs   "github.com/Tau-Coin/taucoin-go-p2p/ipfs/api"
 )
 
 type IPFSdb struct {
@@ -41,7 +40,7 @@ func (db *IPFSdb) Put(key, value []byte) error {
 
 func (db *IPFSdb) Get(key []byte) ([]byte, error) {
 	// key -> path
-	path, err:= utils.ByteToPath(key)
+	path, err:= utils.Keccak256ToPath(0xa0, key)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +58,7 @@ func (db *IPFSdb) Get(key []byte) ([]byte, error) {
 
 func (db *IPFSdb) Delete(key []byte) error {
 	// key -> path
-	path, err:= utils.ByteToPath(key)
+	path, err:= utils.Keccak256ToPath(key)
 	if err != nil {
 		return err
 	}
@@ -69,7 +68,7 @@ func (db *IPFSdb) Delete(key []byte) error {
 
 func (db *IPFSdb) Has(key []byte) (bool, error) {
 	// key -> path
-	path, err:= utils.ByteToPath(key)
+	path, err:= utils.Keccak256ToPath(key)
 	if err != nil {
 		return false, err
 	}
