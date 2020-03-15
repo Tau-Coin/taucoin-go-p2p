@@ -58,7 +58,7 @@ func (db *IPFSdb) Get(key []byte) ([]byte, error) {
 
 func (db *IPFSdb) Delete(key []byte) error {
 	// key -> path
-	path, err:= utils.Keccak256ToPath(key)
+	path, err:= utils.Keccak256ToPath(0xa0, key)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (db *IPFSdb) Delete(key []byte) error {
 
 func (db *IPFSdb) Has(key []byte) (bool, error) {
 	// key -> path
-	path, err:= utils.Keccak256ToPath(key)
+	path, err:= utils.Keccak256ToPath(0xa0, key)
 	if err != nil {
 		return false, err
 	}
